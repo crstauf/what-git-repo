@@ -12,8 +12,6 @@ table.wp-list-table.plugins .column-git { width: 20%; }
         font-family: Consolas,Monaco,monospace;
     }
 
-        body.admin-color-fresh #wp-admin-bar-what-git-branch span.root-repo-branch { background-color: #32373c; }
-
     #wp-admin-bar-what-git-branch.has-branch-changed .ab-sub-wrapper { display: block !important; }
 
     #wp-admin-bar-what-git-branch.has-branch-changed ul.ab-submenu { padding-bottom: 12px; }
