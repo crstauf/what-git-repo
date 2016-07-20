@@ -38,7 +38,12 @@ class cssllc_what_git_branch {
 
 		}
 
-		add_action('admin_bar_menu',array(__CLASS__,'action_admin_bar_menu'),99999999999999);
+		add_action('wp_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
+		add_action('admin_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
+		add_action('admin_bar_menu',				array(__CLASS__,'action_admin_bar_menu'),99999999999999);
+		add_filter('manage_plugins_columns',		array(__CLASS__,'filter_manage_plugins_columns'));
+		add_action('manage_plugins_custom_column',	array(__CLASS__,'action_manage_plugins_custom_column'),10,3);
+		add_action('heartbeat_received',			array(__CLASS__,'heartbeat_received'),10,3);
 	}
 
 	private static function add($path) {
@@ -53,6 +58,11 @@ class cssllc_what_git_branch {
 		return !array_key_exists($path,self::$repos) || false === self::$repos[$path] ? $default : self::$repos[$path]->branch;
 	}
 
+	public static function action_enqueue_scripts() {
+		wp_enqueue_script('what-git-branch',plugin_dir_url(__FILE__) . 'scripts.js',array('jquery','heartbeat'),'init');
+		wp_enqueue_style('what-git-branch',plugin_dir_url(__FILE__) . 'style.css',array(),'init');
+	}
+
 	public static function action_admin_bar_menu($bar) {
 		$repos = array();
 		foreach (self::$repos as $repo)
@@ -61,9 +71,12 @@ class cssllc_what_git_branch {
 
 		$bar->add_node(array(
 			'id' => 'what-git-branch',
-			'title' => apply_filters('wgb/bar/top','<span class="code" style="display: inline-block; background-image: url(' . plugin_dir_url(__FILE__) . 'git.png); background-size: auto 50%; background-repeat: no-repeat; background-position: 7px center; background-color: #32373c; padding: 0 7px 0 27px; font-family: Consolas,Monaco,monospace;">' . apply_filters('wgb/bar/top/branch',self::get_branch(ABSPATH,'Git')) . '</span>'),
+			'title' => apply_filters('wgb/bar/top','<span class="code root-repo-branch">' . apply_filters('wgb/bar/top/branch',self::get_branch(ABSPATH,'Git')) . '</span>'),
 			'href' => '#',
 			'parent' => false,
+			'meta' => array(
+				'class' => (15 <= count(self::$repos) ? 'lte-15-repos' : 'gt-15-repos'),
+			),
 		));
 
 		ksort($repos);
@@ -87,14 +100,42 @@ class cssllc_what_git_branch {
 			);
 			$bar->add_node(array(
 				'id' => 'what-git-branch_' . $repo->name,
-				'title' => $name . ' : <span class="code" style="font-family: Consolas,Monaco,monospace; font-size: 0.9em;">' . $branch . '</span>',
+				'title' => '<span class="repo-name">' . $name . '</span> : <span class="repo-branch code">' . $branch . '</span><span class="repo-path"><br />' . $repo->relative . '</span>',
 				'href' => '#',
 				'parent' => 'what-git-branch',
 				'meta' => array(
-					'class' => 'wgb-type-' . $repo->type,
+					'class' => 'type-' . $repo->type,
 				),
 			));
 		}
+	}
+
+	public static function filter_manage_plugins_columns($columns) {
+		return array_merge($columns,array('git' => 'Git Info'));
+	}
+
+	public static function action_manage_plugins_custom_column($column,$file,$data) {
+		if ('git' !== $column) return false;
+		$path = dirname(WP_PLUGIN_DIR . '/' . $file);
+		if (array_key_exists($path,self::$repos))
+			echo 'Branch <span class="code">' . self::get_branch($path) . '</span>';
+		else
+			echo '&mdash;';
+	}
+
+	public static function heartbeat_received($response,$data,$screen_id) {
+		if (
+			!array_key_exists('what-git-branch',$data) ||
+			1 != $data['what-git-branch']
+		)
+			return $response;
+
+		foreach (self::$repos as $i => $repo) {
+			$repo->get_branch();
+			self::$repos[$i] = $repo;
+		}
+
+		return self::$repos;
 	}
 
 }
@@ -106,6 +147,7 @@ class cssllc_what_git_branch_repo {
 	var $path = '';     // absolute path to repository location
 	var $relative = ''; // path relative to ABSPATH
 	var $branch = '';
+	var $branch_changed = false;
 
 	function __construct() {
 		$args = func_get_args();
@@ -120,9 +162,6 @@ class cssllc_what_git_branch_repo {
 			is_file($this->path . '/.git/HEAD')
 		) {
 			$this->type = 'repository';
-			$file = file_get_contents($this->path . '/.git/HEAD');
-			$pos = strripos($file,'/');
-			$this->branch = esc_attr(trim(substr($file,($pos + 1))));
 
 		} else if (is_file($this->path . '/.git')) {
 			$submod = file_get_contents($this->path . '/.git');
@@ -134,10 +173,26 @@ class cssllc_what_git_branch_repo {
 				$this->type = 'submod';
 				$this->path = $path;
 				$this->relative = str_replace(rtrim(ABSPATH,'/'),'',$this->path);
-				$file = file_get_contents($this->path . 'HEAD');
-				$this->branch = esc_attr(substr(trim($file),0,7));
 			}
 		}
+
+		$this->get_branch();
+	}
+
+	function get_branch() {
+		$this->branch_changed = false;
+		$orig = $this->branch;
+
+		if ('repository' === $this->type) {
+			$file = file_get_contents($this->path . '/.git/HEAD');
+			$pos = strripos($file,'/');
+			$this->branch = esc_attr(trim(substr($file,($pos + 1))));
+		} else {
+			$file = file_get_contents($this->path . '/HEAD');
+			$this->branch = esc_attr(substr(trim($file),0,7));
+		}
+
+		if ($this->branch !== $orig) $this->branch_changed = true;
 	}
 
 	public static function is_repo()   { return 'repository' === $this->type; }

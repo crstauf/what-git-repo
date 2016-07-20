@@ -1,0 +1,52 @@
+table.wp-list-table.plugins .column-git { width: 20%; }
+
+@media screen and (min-width: 783px) {
+
+    #wp-admin-bar-what-git-branch span.root-repo-branch {
+        display: inline-block;
+        background-image: url(git.png);
+        background-size: auto 50%;
+        background-repeat: no-repeat;
+        background-position: 7px center;
+        padding: 0 7px 0 27px;
+        font-family: Consolas,Monaco,monospace;
+    }
+
+        body.admin-color-fresh #wp-admin-bar-what-git-branch span.root-repo-branch { background-color: #32373c; }
+
+    #wp-admin-bar-what-git-branch.has-branch-changed .ab-sub-wrapper { display: block !important; }
+
+    #wp-admin-bar-what-git-branch.has-branch-changed ul.ab-submenu { padding-bottom: 12px; }
+
+    #wp-admin-bar-what-git-branch.has-branch-changed li { display: none; }
+
+        #wp-admin-bar-what-git-branch.has-branch-changed li.branch-changed { display: list-item; }
+
+    #wp-admin-bar-what-git-branch:not(.has-branch-changed) li.branch-changed * { color: #ef4f32 !important; }
+
+    #wp-admin-bar-what-git-branch li a { cursor: default; }
+
+    #wp-admin-bar-what-git-branch.lte-15-repos li,
+    #wp-admin-bar-what-git-branch.gt-15-repos li:hover { height: 35px; }
+
+    #wp-admin-bar-what-git-branch .repo-branch {
+        font-family: Consolas,Monaco,monospace;
+        font-size: 0.9em;
+    }
+
+    #wp-admin-bar-what-git-branch .repo-path  {
+        position: relative;
+        top: -20px;
+        font-size: 9px;
+        opacity: 0.5;
+    }
+
+        #wp-admin-bar-what-git-branch.gt-15-repos .repo-path { display: none; }
+
+            #wp-admin-bar-what-git-branch.gt-15-repos li:hover > a.ab-item > .repo-path { display: inline; }
+
+}
+
+@media screen and (max-width: 1000px) {
+    #wp-admin-bar-what-git-branch .ab-sub-wrapper { right: 0; }
+}
