@@ -22,7 +22,7 @@ class cssllc_what_git_branch {
 	private static $repos = false;
 
 	function __construct() {
-		self::add(ABSPATH,'Root');
+		self::add(ABSPATH);
 
 		self::$scandirs = apply_filters('wgb/scandirs',array(
 			WP_PLUGIN_DIR,
@@ -75,7 +75,7 @@ class cssllc_what_git_branch {
 			'href' => '#',
 			'parent' => false,
 			'meta' => array(
-				'class' => (15 <= count(self::$repos) ? 'lte-15-repos' : 'gt-15-repos'),
+				'class' => (15 >= count($repos) ? 'lte-15-repos' : 'gt-15-repos'),
 			),
 		));
 
@@ -98,9 +98,14 @@ class cssllc_what_git_branch {
 				$repo->branch,
 				$repo
 			);
+			$path = apply_filters(
+				'wgb/bar/repo/path',
+				('submod' === $repo->type ? $repo->relative_directory : ('/' === $repo->relative ? $repo->path : $repo->relative)),
+				$repo
+			);
 			$bar->add_node(array(
 				'id' => 'what-git-branch_' . $repo->name,
-				'title' => '<span class="repo-name">' . $name . '</span> : <span class="repo-branch code">' . $branch . '</span><span class="repo-path"><br />' . $repo->relative . '</span>',
+				'title' => '<span class="repo-name">' . $name . '</span> : <span class="repo-branch code">' . $branch . '</span><span class="repo-path"><br />' . ('submod' === $repo->type ? 'submod: ' : '') . $path . '</span>',
 				'href' => '#',
 				'parent' => 'what-git-branch',
 				'meta' => array(
@@ -143,11 +148,12 @@ class cssllc_what_git_branch {
 class cssllc_what_git_branch_repo {
 
 	var $type = false;
-	var $name = '';	    // directory name
-	var $path = '';     // absolute path to repository location
-	var $relative = ''; // path relative to ABSPATH
+	var $name = '';	              // directory name
+	var $path = '';               // absolute path to repository location
+	var $relative = '';           // path relative to ABSPATH
+	var $directory = '';          // absolute path to submodule location (not .git files)
+	var $relative_directory = ''; // relative path to submodule location (not .git files)
 	var $branch = '';
-	var $branch_changed = false;
 
 	function __construct() {
 		$args = func_get_args();
@@ -164,8 +170,10 @@ class cssllc_what_git_branch_repo {
 			$this->type = 'repository';
 
 		} else if (is_file($this->path . '/.git')) {
+			$this->directory = $this->path;
+			$this->relative_directory = str_replace(rtrim(ABSPATH,'/'),'',$this->directory);
 			$submod = file_get_contents($this->path . '/.git');
-			$path = $this->path . '/' . str_replace('gitdir: ','',$submod);
+			$path = trailingslashit($this->path . '/' . trim(str_replace('gitdir: ','',$submod)));
 			if (
 				file_exists($path) && is_dir($path) &&
 				file_exists($path . 'HEAD')
@@ -186,10 +194,14 @@ class cssllc_what_git_branch_repo {
 		if ('repository' === $this->type) {
 			$file = file_get_contents($this->path . '/.git/HEAD');
 			$pos = strripos($file,'/');
-			$this->branch = esc_attr(trim(substr($file,($pos + 1))));
-		} else {
-			$file = file_get_contents($this->path . '/HEAD');
-			$this->branch = esc_attr(substr(trim($file),0,7));
+			$this->branch = esc_attr(substr(trim($file),($pos + 1)));
+		} else if ('submod' === $this->type) {
+			$file = file_get_contents(trailingslashit($this->path) . 'HEAD');
+			if (false !== stripos($file,'ref: ')) {
+				$pos = strripos($file,'/');
+				$this->branch = esc_attr(substr(trim($file),($pos + 1)));
+			} else
+				$this->branch = esc_attr(substr(trim($file),0,7));
 		}
 
 		if ($this->branch !== $orig) $this->branch_changed = true;
