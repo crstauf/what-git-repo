@@ -14,6 +14,7 @@ table.wp-list-table.plugins .column-git { width: 20%; }
 
     #wp-admin-bar-what-git-branch.has-branch-changed .ab-sub-wrapper { display: block !important; }
 
+    #wp-admin-bar-what-git-branch.lte-15-repos ul.ab-submenu,
     #wp-admin-bar-what-git-branch.has-branch-changed ul.ab-submenu { padding-bottom: 12px; }
 
     #wp-admin-bar-what-git-branch.has-branch-changed li { display: none; }
