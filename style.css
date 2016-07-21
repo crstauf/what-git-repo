@@ -42,6 +42,7 @@ table.wp-list-table.plugins .column-git { width: 20%; }
 
         #wp-admin-bar-what-git-branch.gt-15-repos .repo-path { display: none; }
 
+            #wp-admin-bar-what-git-branch.has-branch-changed li > a.ab-item > .repo-path,
             #wp-admin-bar-what-git-branch.gt-15-repos li:hover > a.ab-item > .repo-path { display: inline; }
 
 }
