@@ -193,18 +193,16 @@ class cssllc_what_git_branch_repo {
 
 		if ('repository' === $this->type) {
 			$file = file_get_contents($this->path . '/.git/HEAD');
-			$pos = strripos($file,'/');
-			$this->branch = esc_attr(substr(trim($file),($pos + 1)));
 		} else if ('submod' === $this->type) {
 			$file = file_get_contents(trailingslashit($this->path) . 'HEAD');
-			if (false !== stripos($file,'ref: ')) {
-				$pos = strripos($file,'/');
-				$this->branch = esc_attr(substr(trim($file),($pos + 1)));
-			} else
-				$this->branch = esc_attr(substr(trim($file),0,7));
 		}
 
-		if ($this->branch !== $orig) $this->branch_changed = true;
+		if (false !== stripos($file,'ref: ')) {
+			$pos = strripos($file,'/');
+			$this->branch = esc_attr(substr(trim($file),($pos + 1)));
+		} else
+			$this->branch = esc_attr(substr(trim($file),0,7));
+
 	}
 
 	public static function is_repo()   { return 'repository' === $this->type; }
