@@ -19,7 +19,7 @@ new cssllc_what_git_branch;
 class cssllc_what_git_branch {
 
 	private static $scandirs = array();
-	private static $repos = false;
+	public static $repos = false;
 
 	function __construct() {
 		self::add(ABSPATH);
@@ -44,6 +44,8 @@ class cssllc_what_git_branch {
 		add_filter('manage_plugins_columns',		array(__CLASS__,'filter_manage_plugins_columns'));
 		add_action('manage_plugins_custom_column',	array(__CLASS__,'action_manage_plugins_custom_column'),10,3);
 		add_action('heartbeat_received',			array(__CLASS__,'heartbeat_received'),10,3);
+		add_filter('qm/collectors',					array(__CLASS__,'filter_qm_collectors'),20,2);
+		add_filter('qm/outputter/html',				array(__CLASS__,'filter_qm_outputters'),130,2);
 	}
 
 	private static function add($path) {
@@ -143,6 +145,18 @@ class cssllc_what_git_branch {
 		return self::$repos;
 	}
 
+	public static function filter_qm_collectors( array $collectors, QueryMonitor $qm ) {
+		$collectors['whatgitbranch'] = new cssllc_what_git_branch_qm_collector;
+		return $collectors;
+	}
+
+	public static function filter_qm_outputters( array $output, QM_Collectors $collectors ) {
+		require_once 'qm-output.php';
+		if ( $collector = QM_Collectors::get( 'whatgitbranch' ) ) {
+			$output['whatgitbranch'] = new cssllc_what_git_branch_qm_outputter( $collector );
+		}
+		return $output;
+	}
 }
 
 class cssllc_what_git_branch_repo {
@@ -208,4 +222,24 @@ class cssllc_what_git_branch_repo {
 	public static function is_repo()   { return 'repository' === $this->type; }
 	public static function is_submod() { return     'submod' === $this->type; }
 
+}
+
+if (class_exists('QM_Collector')) {
+	class cssllc_what_git_branch_qm_collector extends QM_Collector {
+
+		public $id = 'whatgitbranch';
+
+		public function name() {
+			return __( 'Git Repositories/Submodules', 'query-monitor' );
+		}
+
+		public function __construct() {
+			global $wpdb;
+			parent::__construct();
+		}
+
+		public function process() {
+			$this->data['whatgitbranch'] = cssllc_what_git_branch::$repos;
+		}
+	}
 }
