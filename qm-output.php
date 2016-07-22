@@ -53,14 +53,14 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
     }
 
 	function row($repo) {
-		echo '<tr id="qm-wgb-' . $repo->name . '">' .
+		echo '<tr id="qm-wgb-' . apply_filters('wgb/qm/repo/id',$repo->name,$repo) . '">' .
 			'<th>' .
 				esc_html(apply_filters('wgb/qm/repo/name',$repo->name,$repo)) .
 			'</th>' .
 			'<td class="qm-has-inner qm-has-toggle">' .
 				'<div class="qm-toggler">' .
 					'<div class="qm-inner-toggle">' .
-						'<span class="qm-wgb-branch">' . apply_filters('wgb/qm/repo/branch',$repo->get_branch(),$repo) . '</span>' . 
+						'<span class="qm-wgb-branch">' . apply_filters('wgb/qm/repo/branch',$repo->get_branch(),$repo) . '</span>' .
 						'<a href="#" class="qm-toggle" data-on="+" data-off="-">+</a>' .
 					'</div>' .
 					'<div class="qm-toggled" style="display: none;">' .
@@ -69,8 +69,8 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
 								'<tr>' .
 									'<td>' .
 											esc_html(apply_filters(
-												'wgb/qm/repo/relative',
-												$repo->is_submod() ? $repo->relative_directory : $repo->relative,
+												'wgb/qm/repo/path',
+												$repo->is_root() ? $repo->path : $repo->get_relative(),
 												$repo
 											)) .
 									'</td>' .

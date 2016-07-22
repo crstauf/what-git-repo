@@ -25,9 +25,9 @@
 
             if ($("#qm-whatgitbranch").length && $("#qm-wgb-" + repo['name']).length) {
                 var tr = $("#qm-wgb-" + repo['name']);
-                orig = tr.find('.qm-wgb-branch').html();
+                var orig_qm = tr.find('.qm-wgb-branch').html();
                 tr.find('.qm-wgb-branch').html(repo['ajax_branch']);
-                if (orig !== repo['ajax_branch'])
+                if (orig_qm !== repo['ajax_branch'])
                     tr.addClass('branch-changed');
                 else
                     tr.removeClass('branch-changed');

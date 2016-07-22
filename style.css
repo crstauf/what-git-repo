@@ -33,6 +33,8 @@ table.wp-list-table.plugins .column-git { width: 20%; }
         font-size: 0.9em;
     }
 
+    body.admin-color-fresh #wp-admin-bar-what-git-branch .repo-branch abbr.commit-short { border-bottom: 1px dotted rgba(240,245,250,.3); }
+
     #wp-admin-bar-what-git-branch .repo-branch .commit-long { display: none; }
 
     #wp-admin-bar-what-git-branch .repo-path  {
@@ -47,15 +49,19 @@ table.wp-list-table.plugins .column-git { width: 20%; }
             #wp-admin-bar-what-git-branch.has-branch-changed li > a.ab-item > .repo-path,
             #wp-admin-bar-what-git-branch.gt-15-repos li:hover > a.ab-item > .repo-path { display: inline; }
 
-    #qm-whatgitbranch tbody tr.branch-changed > *,
-    #qm-whatgitbranch tbody tr.branch-changed > * * {
-        color: #ef4f32 !important;
-    }
-
-    #qm-whatgitbranch .commit-long { display: none; }
-
 }
 
 @media screen and (max-width: 1000px) {
     #wp-admin-bar-what-git-branch .ab-sub-wrapper { right: 0; }
 }
+
+#qm-whatgitbranch tbody tr abbr.commit-short { border-bottom: 1px dotted rgba(68,68,68,.3); }
+
+    #qm-whatgitbranch tbody tr.branch-changed abbr.commit-short { border-bottom-color: #ef4f32; }
+
+#qm-whatgitbranch tbody tr.branch-changed > *,
+#qm-whatgitbranch tbody tr.branch-changed > * * {
+    color: #ef4f32 !important;
+}
+
+#qm-whatgitbranch .commit-long { display: none; }

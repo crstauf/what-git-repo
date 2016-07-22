@@ -39,6 +39,8 @@ class cssllc_what_git_branch {
 		}
 
 		add_filter('wgb/bar/top/branch',			array(__CLASS__,'filter_bar_top_branch'));
+		add_filter('wgb/qm/repo/id',				array(__CLASS__,'filter_qm_repo_id'),10,2);
+		add_filter('wgb/qm/repo/name',				array(__CLASS__,'filter_qm_repo_name'),10,2);
 
 		add_action('wp_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
 		add_action('admin_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
@@ -63,9 +65,9 @@ class cssllc_what_git_branch {
 		return self::$repos[$path]->get_branch();
 	}
 
-	public static function filter_bar_top_branch($text) {
-		return (false === $text ? apply_filters('wgb/bar/top/text','Git') : $text);
-	}
+	public static function filter_bar_top_branch($text)     { return (false === $text ? apply_filters('wgb/bar/top/text','Git') : $text); }
+	public static function filter_qm_repo_id($id,$repo)     { return $repo->is_root() ? 'root' : $id; }
+	public static function filter_qm_repo_name($name,$repo) { return $repo->is_root() ? '{ROOT}' : $name; }
 
 	public static function action_enqueue_scripts() {
 		wp_enqueue_script('what-git-branch',plugin_dir_url(__FILE__) . 'scripts.js',array('jquery','heartbeat'),'init');
@@ -102,17 +104,17 @@ class cssllc_what_git_branch {
 		foreach ($repos as $repo) {
 			$name = apply_filters(
 				'wgb/bar/repo/name',
-				(ABSPATH === $repo->path ? $repo->relative : $repo->name),
+				($repo->is_root() ? '/' : $repo->name),
 				$repo
 			);
 			$branch = apply_filters(
 				'wgb/bar/repo/branch',
-				self::get_branch($repo->path),
+				$repo->get_branch(),
 				$repo
 			);
 			$path = apply_filters(
 				'wgb/bar/repo/path',
-				('submod' === $repo->type ? $repo->relative_directory : ('/' === $repo->relative ? $repo->path : $repo->relative)),
+				($repo->is_root() ? $repo->path : $repo->get_relative()),
 				$repo
 			);
 			$bar->add_node(array(
@@ -120,7 +122,7 @@ class cssllc_what_git_branch {
 				'title' =>
 					'<span class="repo-name">' . $name . '</span> : ' .
 					'<span class="repo-branch code">' . $branch . '</span>' .
-					'<span class="repo-path"><br />' . ('submod' === $repo->type ? 'submod: ' : '') . $path . '</span>',
+					'<span class="repo-path"><br />' . ($repo->is_submod() ? 'submod: ' : '') . $path . '</span>',
 				'href' => '#',
 				'parent' => 'what-git-branch',
 				'meta' => array(
@@ -177,38 +179,33 @@ class cssllc_what_git_branch_repo {
 	var $type = false;
 	var $name = '';	              // directory name
 	var $path = '';               // absolute path to repository location
-	var $relative = '';           // path relative to ABSPATH
-	var $directory = '';          // absolute path to submodule location (not .git files)
-	var $relative_directory = ''; // relative path to submodule location (not .git files)
 	var $branch = '';
+
+	var $git_path = '';           // messy path to location of submodule git files
 	var $commit = false;
 
 	function __construct() {
 		$args = func_get_args();
 
-		$this->path = $args[0];
+		$this->path = trailingslashit($args[0]);
 		$this->name = basename($this->path);
-		$this->relative = str_replace(rtrim(ABSPATH,'/'),'',$this->path);
 
 		if (
-			is_dir($this->path . '/.git') &&
-			file_exists($this->path . '/.git/HEAD') &&
-			is_file($this->path . '/.git/HEAD')
+			is_dir($this->path . '.git') &&
+			file_exists($this->path . '.git/HEAD') &&
+			is_file($this->path . '.git/HEAD')
 		) {
 			$this->type = 'repository';
 
-		} else if (is_file($this->path . '/.git')) {
-			$this->directory = $this->path;
-			$this->relative_directory = str_replace(rtrim(ABSPATH,'/'),'',$this->directory);
-			$submod = file_get_contents($this->path . '/.git');
-			$path = trailingslashit($this->path . '/' . trim(str_replace('gitdir: ','',$submod)));
+		} else if (is_file($this->path . '.git')) {
+			$submod = file_get_contents($this->path . '.git');
+			$path = trailingslashit($this->path . trim(str_replace('gitdir: ','',$submod)));
 			if (
 				file_exists($path) && is_dir($path) &&
 				file_exists($path . 'HEAD')
 			) {
 				$this->type = 'submodule';
-				$this->path = $path;
-				$this->relative = str_replace(rtrim(ABSPATH,'/'),'',$this->path);
+				$this->git_path = $path;
 			}
 		}
 
@@ -217,13 +214,14 @@ class cssllc_what_git_branch_repo {
 
 	function update_branch() {
 		if ($this->is_repo())
-			$file = file_get_contents($this->path . '/.git/HEAD');
+			$file = file_get_contents($this->path . '.git/HEAD');
 		else if ($this->is_submod())
-			$file = file_get_contents(trailingslashit($this->path) . 'HEAD');
+			$file = file_get_contents($this->git_path . 'HEAD');
 
 		if (false !== stripos($file,'ref: ')) {
 			$pos = strripos($file,'/');
 			$this->branch = substr(trim($file),($pos + 1));
+			$this->commit = false;
 		} else {
 			$this->branch = 'HEAD';
 			$this->commit = trim($file);
@@ -236,23 +234,32 @@ class cssllc_what_git_branch_repo {
 
 	function get_branch($display = true) {
 		if (false === $display)
-			return $this->branch . (false !== $this->commit ? '/' . $this->commit : '');
+			return $this->branch . (false !== $this->commit ? ' (' . $this->commit . ')' : '');
 
 		return apply_filters(
 			'wgb/repo/branch',
 			esc_html($this->branch) .
 			(
 				false !== $this->commit
-				? '/<span class="commit-short">' . esc_html(substr($this->commit,0,7)) . '</span>' .
-					'<span class="commit-long">' . esc_html(substr($this->commit,7)) . '</span>'
+				? ' (<abbr class="commit-short" title="' . esc_html($this->commit) . '">' . esc_html(substr($this->commit,0,7)) . '</abbr>' .
+					'<span class="commit-long">' . esc_html($this->commit) . '</span>)'
 				: ''
 			),
 			$this
 		);
 	}
 
+	function is_root()   { return      ABSPATH === $this->path; }
 	function is_repo()   { return 'repository' === $this->type; }
 	function is_submod() { return  'submodule' === $this->type; }
+
+	function get_relative() {
+		return apply_filters(
+			'wgb/repo/get/relative',
+			'.' . str_replace(rtrim(ABSPATH,'/'),'',$this->path),
+			$this
+		);
+	}
 
 }
 
@@ -275,3 +282,5 @@ if (class_exists('QM_Collector')) {
 		}
 	}
 }
+
+?>
