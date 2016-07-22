@@ -38,6 +38,11 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
 						'<th colspan="3">Git Repositories/Submodules</th>' .
 					'</tr>' .
 				'</thead>' .
+				'<tfoot>' .
+					'<tr>' .
+						'<td colspan="3" style="text-align: right !important;">Count: ' . count($data['whatgitbranch']) . '</td>' .
+					'</tr>' .
+				'</tfoot>' .
 				'<tbody>';
 
 					if (isset($root))
