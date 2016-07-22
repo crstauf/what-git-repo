@@ -64,4 +64,7 @@ table.wp-list-table.plugins .column-git { width: 20%; }
     color: #ef4f32 !important;
 }
 
-#qm-whatgitbranch .commit-long { display: none; }
+#qm-whatgitbranch .commit-long,
+#qm-whatgitbranch td.qm-toggled-on .commit-short { display: none; }
+
+    #qm-whatgitbranch td.qm-toggled-on .commit-long { display: inline; }
