@@ -242,7 +242,7 @@ class cssllc_what_git_branch_repo {
 			(
 				false !== $this->commit
 				? ' (<abbr class="commit-short" title="' . esc_html($this->commit) . '">' . esc_html(substr($this->commit,0,7)) . '</abbr>' .
-					'<span class="commit-long">' . esc_html($this->commit) . '</span>)'
+					'<span class="commit-full">' . esc_html($this->commit) . '</span>)'
 				: ''
 			),
 			$this
