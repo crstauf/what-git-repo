@@ -30,41 +30,61 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
 			unset($repos[$data['whatgitbranch'][ABSPATH]->name]);
 		}
 
-		echo '<div id="' . esc_attr( $this->collector->id() ) . '" class="qm qm-full">';
+		echo '<div id="' . esc_attr( $this->collector->id() ) . '" class="qm qm-half">';
 
 			echo '<table cellspacing="0">' .
 				'<thead>' .
 					'<tr>' .
-						'<th colspan="4">Git Repositories/Submodules</th>' .
+						'<th colspan="3">Git Repositories/Submodules</th>' .
 					'</tr>' .
-                    '<tr>' .
-                        '<th>Name</th><th>Type</th><th>Branch</th><th>Path</th>' .
-                    '</tr>' .
 				'</thead>' .
 				'<tbody>';
 
 					if (isset($root))
-						echo '<tr>' .
-							'<th>{Root}</th>' .
-							'<th>' . esc_attr('submod' === $root->type ? 'Submodule' : 'Repository') . '</th>' .
-							'<td>' . esc_attr($root->branch) . '</td>' .
-							'<td>' . esc_attr('submod' === $root->type ? $root->relative_directory : $root->relative) . '</td>' .
-						'</tr>';
+						$this->row($root);
 
-                    foreach ($repos as $absolute => $repo) {
-                        echo '<tr>' .
-                            '<th>' . esc_attr($repo->name) . '</th>' .
-							'<th>' . esc_attr('submod' === $repo->type ? 'Submodule' : 'Repository') . '</th>' .
-                            '<td>' . esc_attr($repo->branch) . '</td>' .
-                            '<td>' . esc_attr('submod' === $repo->type ? $repo->relative_directory : $repo->relative) . '</td>' .
-                        '</tr>';
-                    }
+					foreach ($repos as $repo)
+						$this->row($repo);
 
                 echo '</tbody>' .
             '</table>' .
         '</div>';
 
     }
+
+	function row($repo) {
+		echo '<tr id="qm-wgb-' . $repo->name . '">' .
+			'<th>' .
+				esc_html(apply_filters('wgb/qm/repo/name',$repo->name,$repo)) .
+			'</th>' .
+			'<td class="qm-has-inner qm-has-toggle">' .
+				'<div class="qm-toggler">' .
+					'<div class="qm-inner-toggle">' .
+						'<span class="qm-wgb-branch">' . apply_filters('wgb/qm/repo/branch',$repo->get_branch(),$repo) . '</span>' . 
+						'<a href="#" class="qm-toggle" data-on="+" data-off="-">+</a>' .
+					'</div>' .
+					'<div class="qm-toggled" style="display: none;">' .
+						'<table cellspacing="0" class="qm-inner">' .
+							'<tbody>' .
+								'<tr>' .
+									'<td>' .
+											esc_html(apply_filters(
+												'wgb/qm/repo/relative',
+												$repo->is_submod() ? $repo->relative_directory : $repo->relative,
+												$repo
+											)) .
+									'</td>' .
+								'</tr>' .
+								'<tr>' .
+									'<td>' . esc_html($repo->is_submod() ? 'submodule' : 'repository') . '</td>' .
+								'</tr>' .
+							'</tbody>' .
+						'</table>' .
+					'</div>' .
+				'</div>' .
+			'</td>' .
+		'</tr>';
+	}
 
 }
 
