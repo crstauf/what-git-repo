@@ -38,18 +38,23 @@ class cssllc_what_git_branch {
 
 		}
 
-		add_filter('wgb/bar/top/branch',			array(__CLASS__,'filter_bar_top_branch'));
-		add_filter('wgb/qm/repo/id',				array(__CLASS__,'filter_qm_repo_id'),10,2);
-		add_filter('wgb/qm/repo/name',				array(__CLASS__,'filter_qm_repo_name'),10,2);
+		if (is_array(self::$repos) && count(self::$repos)) {
 
-		add_action('wp_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
-		add_action('admin_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
-		add_action('admin_bar_menu',				array(__CLASS__,'action_admin_bar_menu'),99999999999999);
-		add_filter('manage_plugins_columns',		array(__CLASS__,'filter_manage_plugins_columns'));
-		add_action('manage_plugins_custom_column',	array(__CLASS__,'action_manage_plugins_custom_column'),10,3);
-		add_action('heartbeat_received',			array(__CLASS__,'heartbeat_received'),10,3);
-		add_filter('qm/collectors',					array(__CLASS__,'filter_qm_collectors'),20,2);
-		add_filter('qm/outputter/html',				array(__CLASS__,'filter_qm_outputters'),130,2);
+			add_filter('wgb/bar/top/branch',			array(__CLASS__,'filter_bar_top_branch'));
+			add_filter('wgb/qm/repo/id',				array(__CLASS__,'filter_qm_repo_id'),10,2);
+			add_filter('wgb/qm/repo/name',				array(__CLASS__,'filter_qm_repo_name'),10,2);
+
+			add_action('wp_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
+			add_action('admin_enqueue_scripts',			array(__CLASS__,'action_enqueue_scripts'));
+			if (is_admin_bar_showing())
+				add_action('admin_bar_menu',			array(__CLASS__,'action_admin_bar_menu'),99999999999999);
+			add_filter('manage_plugins_columns',		array(__CLASS__,'filter_manage_plugins_columns'));
+			add_action('manage_plugins_custom_column',	array(__CLASS__,'action_manage_plugins_custom_column'),10,3);
+			add_action('heartbeat_received',			array(__CLASS__,'heartbeat_received'),10,3);
+			add_filter('qm/collectors',					array(__CLASS__,'filter_qm_collectors'),20,2);
+			add_filter('qm/outputter/html',				array(__CLASS__,'filter_qm_outputters'),130,2);
+
+		}
 	}
 
 	private static function add($path) {

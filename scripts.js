@@ -12,15 +12,17 @@
             var li = $("#wp-admin-bar-what-git-branch_" + repo['name']);
             var orig = li.find('.repo-branch').html();
 
-            if ('/' === repo['relative'])
-                $("#wp-admin-bar-what-git-branch .root-repo-branch").html(repo['ajax_branch']);
-            else if (li.length) {
-                if (orig !== repo['ajax_branch']) {
-                    changed++;
-                    li.addClass('branch-changed');
-                } else
-                    li.removeClass('branch-changed');
-                li.find('.repo-branch').html(repo['ajax_branch']);
+            if (li.length) {
+                if ('/' === repo['relative'])
+                    $("#wp-admin-bar-what-git-branch .root-repo-branch").html(repo['ajax_branch']);
+                else if (li.length) {
+                    if (orig !== repo['ajax_branch']) {
+                        changed++;
+                        li.addClass('branch-changed');
+                    } else
+                        li.removeClass('branch-changed');
+                    li.find('.repo-branch').html(repo['ajax_branch']);
+                }
             }
 
             if ($("#qm-whatgitbranch").length && $("#qm-wgb-" + repo['name']).length) {
@@ -34,7 +36,7 @@
             }
         }
 
-        if (0 !== changed) {
+        if (0 !== changed && $("#wp-admin-bar-what-git-branch").length) {
             $("#wp-admin-bar-what-git-branch").addClass('has-branch-changed');
             $("#wp-admin-bar-what-git-branch .ab-sub-wrapper").slideDown(500);
             setTimeout(function() {
