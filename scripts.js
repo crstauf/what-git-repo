@@ -15,7 +15,7 @@
             if (li.length) {
                 if ('/' === repo['relative'])
                     $("#wp-admin-bar-what-git-branch .root-repo-branch").html(repo['ajax_branch']);
-                else if (li.length) {
+                else {
                     if (orig !== repo['ajax_branch']) {
                         changed++;
                         li.addClass('branch-changed');
