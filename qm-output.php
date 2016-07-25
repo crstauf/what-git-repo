@@ -93,4 +93,10 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
 
 }
 
+function register_what_git_branch_output_html( array $output, QM_Collectors $collectors ) {
+	if ( $collector = QM_Collectors::get( 'whatgitbranch' ) )
+		$output['whatgitbranch'] = new cssllc_what_git_branch_qm_outputter( $collector );
+	return $output;
+}
+
 ?>

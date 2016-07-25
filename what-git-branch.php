@@ -49,7 +49,8 @@ class cssllc_what_git_branch {
 		add_action('manage_plugins_custom_column',	array(__CLASS__,'action_manage_plugins_custom_column'),10,3);
 		add_action('heartbeat_received',			array(__CLASS__,'heartbeat_received'),10,3);
 		add_filter('qm/collectors',					array(__CLASS__,'filter_qm_collectors'),20,2);
-		add_filter('qm/outputter/html',				array(__CLASS__,'filter_qm_outputters'),130,2);
+		add_filter('qm/outputter/html',				array(__CLASS__,'filter_qm_outputters_0'),0);
+		add_filter('qm/outputter/html',				'register_what_git_branch_output_html',155,2);
 	}
 
 	private static function add($path) {
@@ -165,13 +166,11 @@ class cssllc_what_git_branch {
 		return $collectors;
 	}
 
-	public static function filter_qm_outputters( array $output, QM_Collectors $collectors ) {
+	public static function filter_qm_outputters_0( array $output ) {
 		require_once 'qm-output.php';
-		if ( $collector = QM_Collectors::get( 'whatgitbranch' ) ) {
-			$output['whatgitbranch'] = new cssllc_what_git_branch_qm_outputter( $collector );
-		}
 		return $output;
 	}
+
 }
 
 class cssllc_what_git_branch_repo {
