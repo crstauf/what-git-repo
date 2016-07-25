@@ -30,7 +30,7 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
 			unset($repos[$data['whatgitbranch'][ABSPATH]->name]);
 		}
 
-		echo '<div id="' . esc_attr( $this->collector->id() ) . '" class="qm qm-half qm-two-thirds">';
+		echo '<div id="' . esc_attr( $this->collector->id() ) . '" class="qm qm-half">';
 
 			echo '<table cellspacing="0">' .
 				'<thead>' .
