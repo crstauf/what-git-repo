@@ -16,6 +16,13 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
 
 		$data = $this->collector->get_data();
 
+		if (
+			!array_key_exists('whatgitbranch',$data) ||
+			!is_array($data['whatgitbranch']) ||
+			!count($data['whatgitbranch'])
+		)
+			return;
+
         $repos = array();
         foreach ($data['whatgitbranch'] as $repo)
             $repos[$repo->name] = $repo;
