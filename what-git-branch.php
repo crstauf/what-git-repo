@@ -76,6 +76,8 @@ class cssllc_what_git_branch {
 	public static function filter_qm_repo_name($name,$repo) { return $repo->is_root() ? '{ROOT}' : $name; }
 
 	public static function action_enqueue_scripts() {
+		if (!current_user_can('administrator')) return;
+		if (!is_admin_bar_showing() && !class_exists('QueryMonitor')) return;
 		wp_enqueue_script('what-git-branch',plugin_dir_url(__FILE__) . 'scripts.js',array('jquery','heartbeat'),'3e46dd6');
 		wp_enqueue_style('what-git-branch',plugin_dir_url(__FILE__) . 'style.css',array(),'5019311');
 	}
