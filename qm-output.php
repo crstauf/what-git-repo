@@ -27,7 +27,7 @@ class cssllc_what_git_branch_qm_outputter extends QM_Output_Html {
         foreach ($data['whatgitbranch'] as $repo)
             $repos[$repo->name] = $repo;
 
-        ksort($repos);
+        ksort($repos,SORT_STRING | SORT_FLAG_CASE);
 
         if (
             array_key_exists(ABSPATH,$data['whatgitbranch']) &&

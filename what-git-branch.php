@@ -88,7 +88,7 @@ class cssllc_what_git_branch {
 			if (is_object($repo) && isset($repo->name))
 				$repos[$repo->name] = $repo;
 
-		ksort($repos);
+		ksort($repos,SORT_STRING | SORT_FLAG_CASE);
 
 		if (array_key_exists(ABSPATH,self::$repos)) {
 			$root = $repos[self::$repos[ABSPATH]->name];
